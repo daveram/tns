@@ -77,6 +77,7 @@ services:
       - ./datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - ./dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ./dashboards:/etc/grafana/dashboards
+      - grafana-data:/var/lib/grafana
     environment:
      - GF_AUTH_ANONYMOUS_ENABLED=true
      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -101,6 +102,7 @@ services:
       - --web.enable-admin-api
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
     links:
       - app
       - db
@@ -149,6 +151,8 @@ services:
 
   loki:
     image: grafana/loki:latest
+    volumes:
+      - loki-data:/loki
     command:
       - -config.file=/etc/loki/local-config.yaml
       - -table-manager.retention-period=1d
@@ -157,10 +161,12 @@ services:
       - "3100:3100"
     labels:
       namespace: monitoring
-    logging: *default-logging
+    #logging: *default-logging
 
   tempo:
     image: grafana/tempo:latest
+    volumes:
+      - tempo-data:/var/tempo
     command:
       - --target=all
       - --storage.trace.backend=local
@@ -174,3 +180,9 @@ services:
     logging: *default-logging
     depends_on:
       - loki
+
+volumes:
+  grafana-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
